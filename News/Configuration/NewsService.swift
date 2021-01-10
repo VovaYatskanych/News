@@ -9,8 +9,6 @@ import Foundation
 
 enum NewsService {
     
-    
-    
     public static var country: String = "Ukraine"
     public static var category: String = ""
     public static var source: String = ""

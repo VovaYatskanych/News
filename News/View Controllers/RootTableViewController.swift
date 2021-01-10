@@ -140,10 +140,15 @@ final class RootTableViewController: UITableViewController, SFSafariViewControll
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if currentPage < totalPage! && indexPath.row == articles.count - 1 {
             currentPage = currentPage + 1
-            NetworkManager.shared.getNews(page: currentPage) { (model) in
-                self.articles.append(contentsOf: model!.articles)
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
+            NetworkManager.shared.getNews(page: currentPage) { (model, error) in
+                
+                if let model = model {
+                    self.articles.append(contentsOf: model.articles)
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                } else if let error = error {
+                    print(error.localizedDescription)
                 }
             }
         }
@@ -172,12 +177,16 @@ extension RootTableViewController: FilterDelegate {
     }
     
     func fetchData(page: Int) {
-        NetworkManager.shared.getNews(page: 1) { (model) in
+        NetworkManager.shared.getNews(page: 1) { (model, error) in
             
-            self.articles = model!.articles
-            self.totalPage = model!.totalResults! / 5
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
+            if let model = model {
+                self.articles = model.articles
+                self.totalPage = model.totalResults! / 5
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            } else if let error = error {
+                print(error.localizedDescription)
             }
         }
     }
@@ -194,10 +203,14 @@ extension RootTableViewController: UISearchResultsUpdating, UISearchControllerDe
         let searchBar = searchController.searchBar
         NewsService.searchString = searchBar.text
         searchTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false, block: { (timer) in
-            NetworkManager.shared.getNews(page: 1) { (model) in
-                self.filteredArticles = model!.articles
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
+            NetworkManager.shared.getNews(page: 1) { (model, error) in
+                if let model = model {
+                    self.filteredArticles = model.articles
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                } else if let error = error {
+                    print(error.localizedDescription)
                 }
             }
         })
